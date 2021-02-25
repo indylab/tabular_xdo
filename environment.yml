@@ -1,4 +1,4 @@
-name: XDO
+name: xdo
 channels:
   - defaults
 dependencies:
