@@ -11,6 +11,7 @@ import math
 import time
 import nashpy as nash
 import random
+import argparse
 
 import open_spiel
 from open_spiel.python.algorithms import cfr
@@ -29,16 +30,22 @@ from open_spiel.python.algorithms import psro_oracle
 from open_spiel.python.algorithms import best_response as pyspiel_best_response
 import pyspiel
 import time
+import datetime
 from numpy import array
 
-iterations = 1000000
-algorithm = 'psro'
-game_name = 'leduc_poker'
-extra_info = '2000_emp_games_seed3'
+parser = argparse.ArgumentParser()
+parser.add_argument('--algorithm', type=str, choices=["psro", "mccfr", "cfr", "xfp", "xdo"])
+parser.add_argument('--game_name', type=str, required=False, default="leduc_poker", choices=["leduc_poker", "kuhn_poker", "leduc_poker_dummy"])
+commandline_args = parser.parse_args()
+
+algorithm = commandline_args.algorithm
+game_name = commandline_args.game_name
+extra_info = datetime.datetime.now().strftime("%I.%M.%S%p_%b-%d-%Y")
 game = pyspiel.load_game(game_name, 
                         {"players": pyspiel.GameParameter(2)})
 starting_br_conv_threshold = 2**4
-cfr_psro_iterations = 200000
+iterations = 1000000
+xdo_iterations = 200000
 random_max_br = False
 
 
@@ -126,7 +133,7 @@ elif algorithm == 'mccfr':
 elif algorithm == 'xfp':
     solver = fictitious_play.XFPSolver(game)
     run(solver, iterations)
-elif algorithm == 'cfr_psro':
+elif algorithm == 'xdo':
     brs = []
     info_test = []
     for i in range(2):
@@ -137,10 +144,10 @@ elif algorithm == 'cfr_psro':
         brs.append(full_br_policy)
     br_list = [brs]
     start_time = time.time()
-    cfr_psro_times = []
-    cfr_psro_exps = []
-    cfr_psro_episodes = []
-    cfr_psro_infostates = []
+    xdo_times = []
+    xdo_exps = []
+    xdo_episodes = []
+    xdo_infostates = []
 
     br_conv_threshold = starting_br_conv_threshold
 
@@ -150,7 +157,7 @@ elif algorithm == 'cfr_psro':
         print('Iteration: ', i)
         cfr_br_solver = cfr_br_actions.CFRSolver(game, br_list)
 
-        for j in range(cfr_psro_iterations):
+        for j in range(xdo_iterations):
             cfr_br_solver.evaluate_and_update_policy()
             episode += 1
             if j%50==0:
@@ -170,10 +177,10 @@ elif algorithm == 'cfr_psro':
         print('Total elapsed time: ', elapsed_time)
         num_infostates += cfr_br_solver.num_infostates_expanded
         print('Num infostates expanded (mil): ', num_infostates/1e6)
-        cfr_psro_times.append(elapsed_time)
-        cfr_psro_exps.append(conv)
-        cfr_psro_episodes.append(episode)
-        cfr_psro_infostates.append(num_infostates)
+        xdo_times.append(elapsed_time)
+        xdo_exps.append(conv)
+        xdo_episodes.append(episode)
+        xdo_infostates.append(num_infostates)
 
         brs = []
         for i in range(2):
@@ -185,10 +192,10 @@ elif algorithm == 'cfr_psro':
             brs.append(full_br_policy)
 
         br_list.append(brs)
-        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_times', np.array(cfr_psro_times))
-        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_exps', np.array(cfr_psro_exps))
-        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_episodes', np.array(cfr_psro_episodes))
-        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_infostates', np.array(cfr_psro_infostates))
+        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_times', np.array(xdo_times))
+        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_exps', np.array(xdo_exps))
+        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_episodes', np.array(xdo_episodes))
+        np.save('./results/'+algorithm+'_'+game_name+'_random_br_'+str(random_max_br)+extra_info+'_infostates', np.array(xdo_infostates))
 
         
 elif algorithm == 'xfp_psro':
@@ -213,7 +220,7 @@ elif algorithm == 'xfp_psro':
         print('Iteration: ', i)
         xfp_br_solver = fictitious_play_br_actions.XFPSolver(game, br_list)
 
-        for j in range(cfr_psro_iterations):
+        for j in range(xdo_iterations):
             xfp_br_solver.iteration()
             episode += 1
             if j%50==0:
