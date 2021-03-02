@@ -3,9 +3,10 @@ from __future__ import division
 from __future__ import print_function
 
 import time
-
+import argparse
 import numpy as np
 import pyspiel
+
 from open_spiel.python.algorithms import cfr_br_actions
 from open_spiel.python.algorithms import exploitability
 from open_spiel.python.algorithms import exploitability_br_actions
@@ -97,17 +98,22 @@ def get_psro_meta_Nash(game, br_list, num_episodes=100, seed=1):
     solver = psro_oracle.PSRO(game, psro_br_list)
     solver.evaluate(num_episodes=num_episodes)
     conv = exploitability.exploitability(game, solver._current_policy)
+    np.save('./results/fixed_pop/PSRO/num_pop_'+ str(len(br_list)) + '_seed_' + str(seed) + '_exp.npy', np.array(conv))
     print("PSRO Exploitability: ", conv)
 
 
 if __name__ == "__main__":
-    num_strats = 300
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--num_strats', type=int, default=300, required=False)
+    commandline_args = parser.parse_args()
+    num_strats = commandline_args.num_strats
     game_name = 'leduc_poker'
     br_conv_threshold = 5e-2
-    seed = 10
+    num_psro_episodes = 200
+    seed = 1
 
     game = pyspiel.load_game(game_name, {"players": pyspiel.GameParameter(2)})
     br_list = get_random_population(num_strats, game)
 
-    get_psro_meta_Nash(game, br_list, num_episodes=200, seed=seed)
+    get_psro_meta_Nash(game, br_list, num_episodes=num_psro_episodes, seed=seed)
     get_xdo_restricted_game_meta_Nash(game, br_list, br_conv_threshold=br_conv_threshold, seed=seed)
