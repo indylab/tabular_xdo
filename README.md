@@ -14,7 +14,7 @@
 
 ```shell script
 git clone --recursive git@github.com:indylab/tabular_xdo.git
-cd grl
+cd tabular_xdo
 ```
 
 If you've already cloned this repo but not the [submodules](/dependencies), you can clone them with:
