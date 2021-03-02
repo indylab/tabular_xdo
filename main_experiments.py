@@ -62,7 +62,7 @@ def _policy_dict_at_state(callable_policy, state):
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--algorithm', type=str, choices=["psro", "mccfr", "cfr", "xfp", "xdo"])
+    parser.add_argument('--algorithm', type=str, choices=["psro", "cfr", "xfp", "xdo"])
     parser.add_argument('--game_name', type=str, required=False, default="leduc_poker",
                         choices=["leduc_poker", "kuhn_poker", "leduc_poker_dummy"])
     commandline_args = parser.parse_args()
@@ -91,14 +91,15 @@ if __name__ == '__main__':
                 solver.iteration()
             if i % 5 == 0:
                 print(algorithm)
-                if algorithm == 'mccfr':
-                    average_policy = policy.PolicyFromCallable(game, solver.callable_avg_policy())
-                elif algorithm == 'cfr':
+                if algorithm == 'cfr':
                     average_policy = solver.average_policy()
                 elif algorithm == 'xfp':
                     average_policy = solver.average_policy()
                 elif algorithm == 'psro':
                     average_policy = solver._current_policy
+                else:
+                    raise ValueError(f"Unknown algorithm name: {algorithm}")
+
                 conv = exploitability.exploitability(game, average_policy)
                 print("Iteration {} exploitability {}".format(i, conv))
                 elapsed_time = time.time() - start_time
@@ -106,28 +107,22 @@ if __name__ == '__main__':
                 times.append(elapsed_time)
                 exps.append(conv)
                 episodes.append(i)
-                np.save(
-                    './results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                        random_max_br) + extra_info + '_times',
-                    np.array(times))
-                np.save(
-                    './results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                        random_max_br) + extra_info + '_exps',
-                    np.array(exps))
-                np.save('./results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                    random_max_br) + extra_info + '_episodes', np.array(episodes))
+                save_prefix = './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info
+                print(f"saving to: {save_prefix + '_times.npy'}")
+                np.save(save_prefix + '_times', np.array(times))
+                print(f"saving to: {save_prefix + '_exps.npy'}")
+                np.save(save_prefix + '_exps', np.array(exps))
+                print(f"saving to: {save_prefix + '_episodes.npy'}")
+                np.save(save_prefix + '_episodes', np.array(episodes))
                 if algorithm == 'cfr':
                     cfr_infostates.append(solver.num_infostates_expanded)
                     print("Num infostates expanded (mil): ", solver.num_infostates_expanded / 1e6)
-                    np.save('./results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                        random_max_br) + extra_info + '_infostates', np.array(cfr_infostates))
+                    print(f"saving to: {save_prefix + '_infostates.npy'}")
+                    np.save(save_prefix + '_infostates', np.array(cfr_infostates))
 
 
     if algorithm == 'cfr':
         solver = cfr.CFRSolver(game)
-        run(solver, iterations)
-    elif algorithm == 'mccfr':
-        solver = outcome_sampling_mccfr.OutcomeSamplingSolver(game)
         run(solver, iterations)
     elif algorithm == 'xfp':
         solver = fictitious_play.XFPSolver(game)
@@ -191,85 +186,15 @@ if __name__ == '__main__':
                 brs.append(full_br_policy)
 
             br_list.append(brs)
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info + '_times',
-                np.array(xdo_times))
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info + '_exps',
-                np.array(xdo_exps))
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                    random_max_br) + extra_info + '_episodes',
-                np.array(xdo_episodes))
-            np.save('./results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                random_max_br) + extra_info + '_infostates', np.array(xdo_infostates))
-
-
-    elif algorithm == 'xfp_psro':
-        brs = []
-        info_test = []
-        for i in range(2):
-            br_info = exploitability.best_response(game, cfr.CFRSolver(game).average_policy(), i)
-            full_br_policy = _full_best_response_policy(br_info["best_response_action"])
-            info_sets = br_info['info_sets']
-            info_test.append(info_sets)
-            brs.append(full_br_policy)
-        br_list = [brs]
-        start_time = time.time()
-        xfp_psro_times = []
-        xfp_psro_exps = []
-        xfp_psro_episodes = []
-
-        br_conv_threshold = starting_br_conv_threshold
-
-        episode = 0
-        for i in range(iterations):
-            print('Iteration: ', i)
-            xfp_br_solver = fictitious_play_br_actions.XFPSolver(game, br_list)
-
-            for j in range(xdo_iterations):
-                xfp_br_solver.iteration()
-                episode += 1
-                if j % 50 == 0:
-                    br_list_conv = exploitability_br_actions.exploitability(game, br_list,
-                                                                            xfp_br_solver.average_policy())
-                    print("Br list conv: ", br_list_conv, j)
-                    if br_list_conv < br_conv_threshold:
-                        break
-
-            conv = exploitability.exploitability(game, xfp_br_solver.average_policy())
-            print("Iteration {} exploitability {}".format(i, conv))
-            if conv < br_conv_threshold:
-                br_conv_threshold /= 2
-                print("new br threshold: ", br_conv_threshold)
-
-            elapsed_time = time.time() - start_time
-            print('Total elapsed time: ', elapsed_time)
-            xfp_psro_times.append(elapsed_time)
-            xfp_psro_exps.append(conv)
-            xfp_psro_episodes.append(episode)
-
-            brs = []
-            for i in range(2):
-                if random_max_br:
-                    br_info = exploitability.best_response_random_max_br(game, xfp_br_solver.average_policy(), i)
-                else:
-                    br_info = exploitability.best_response(game, xfp_br_solver.average_policy(), i)
-                full_br_policy = _full_best_response_policy(br_info["best_response_action"])
-                brs.append(full_br_policy)
-
-            br_list.append(brs)
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info + '_times',
-                np.array(xfp_psro_times))
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info + '_exps',
-                np.array(xfp_psro_exps))
-            np.save(
-                './results/' + algorithm + '_' + game_name + '_random_br_' + str(
-                    random_max_br) + extra_info + '_episodes',
-                np.array(xfp_psro_episodes))
-
+            save_prefix = './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info
+            print(f"saving to: {save_prefix + '_times.npy'}")
+            np.save(save_prefix + '_times', np.array(xdo_times))
+            print(f"saving to: {save_prefix + '_exps.npy'}")
+            np.save(save_prefix + '_exps', np.array(xdo_exps))
+            print(f"saving to: {save_prefix + '_episodes.npy'}")
+            np.save(save_prefix + '_episodes', np.array(xdo_episodes))
+            print(f"saving to: {save_prefix + '_infostates.npy'}")
+            np.save(save_prefix + '_infostates', np.array(xdo_infostates))
     elif algorithm == 'psro':
         brs = []
         info_test = []
