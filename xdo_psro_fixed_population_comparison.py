@@ -102,10 +102,13 @@ def get_psro_meta_Nash(game, br_list, num_episodes=100, seed=1):
     psro_br_list.append(br_list[1])
     psro_br_list.append([1 / len(br_list[1]) for _ in range(len(br_list[1]))])
 
-    solver = psro_oracle.PSRO(game, psro_br_list)
-    solver.evaluate(num_episodes=num_episodes)
+    solver = psro_oracle.PSRO(game, psro_br_list, num_episodes=num_episodes)
+    solver.evaluate()
     conv = exploitability.exploitability(game, solver._current_policy)
-    np.save('./results/fixed_pop/PSRO/num_pop_'+ str(len(br_list)) + '_seed_' + str(seed) + '_exp.npy', np.array(conv))
+    save_path = './results/fixed_pop/PSRO/num_pop_'+ str(len(br_list)) + '_seed_' + str(seed) + '_exp.npy'
+    print(f"saved to: {save_path}")
+    ensure_dir(save_path)
+    np.save(save_path, np.array(conv))
     print("PSRO Exploitability: ", conv)
 
 
