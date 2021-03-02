@@ -79,6 +79,7 @@ export PYTHONPATH=$PYTHONPATH:/<path_to_open_spiel_submodule>/build/python
 # Running Experiments
 To replicate figure 3.a, run the following commands:
 
+```shell script
 python xdo_psro_fixed_population_comparison.py --num_strats 1
 python xdo_psro_fixed_population_comparison.py --num_strats 10
 python xdo_psro_fixed_population_comparison.py --num_strats 20
@@ -86,18 +87,23 @@ python xdo_psro_fixed_population_comparison.py --num_strats 50
 python xdo_psro_fixed_population_comparison.py --num_strats 100
 python xdo_psro_fixed_population_comparison.py --num_strats 300
 python xdo_psro_fixed_population_comparison.py --num_strats 1000
+```
 
 To replicate figure 3.b, run the following commands:
 
+```shell script
 python main_experiments.py --algorithm XDO --game_name leduc_poker
 python main_experiments.py --algorithm PSRO --game_name leduc_poker
+```
 
 To replicate figure 3.c and figure 4.a, run the following commands:
 
+```shell script
 python main_experiments.py --algorithm XDO --game_name leduc_poker_dummy
 python main_experiments.py --algorithm PSRO --game_name leduc_poker_dummy
 python main_experiments.py --algorithm CFR --game_name leduc_poker_dummy
 python main_experiments.py --algorithm XFP --game_name leduc_poker_dummy
+```
 
 
 
