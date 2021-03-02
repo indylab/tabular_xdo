@@ -106,7 +106,7 @@ dependencies:
   - zipp=3.4.0
   - zlib=1.2.11
   - pip:
-code      - absl-py==0.10.0
+      - absl-py==0.10.0
       - astunparse==1.6.3
       - attrs==19.3.0
       - cachetools==4.2.0
