@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import time
 import argparse
 import numpy as np
@@ -13,6 +14,10 @@ from open_spiel.python.algorithms import exploitability_br_actions
 from open_spiel.python.algorithms import psro_oracle
 from open_spiel.python.policy import tabular_policy_from_callable
 
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
 
 def create_random_tabular_policy(game, players=(0, 1)):
     def _random_action_callable_policy(state) -> dict:
@@ -75,14 +80,16 @@ def get_xdo_restricted_game_meta_Nash(game, br_list, br_conv_threshold=1e-2, see
             cfr_psro_episodes.append(episode)
             cfr_psro_infostates.append(num_infostates)
 
-            np.save('./results/fixed_pop/XDO/num_pop_' + str(len(br_list)) + '_seed_' + str(seed) + '_times.npy',
-                    np.array(cfr_psro_times))
-            np.save('./results/fixed_pop/XDO/num_pop_' + str(len(br_list)) + '_seed_' + str(seed) + '_exps.npy',
-                    np.array(cfr_psro_exps))
-            np.save('./results/fixed_pop/XDO/num_pop_' + str(len(br_list)) + '_seed_' + str(seed) + '_episodes.npy',
-                    np.array(cfr_psro_episodes))
-            np.save('./results/fixed_pop/XDO/num_pop_' + str(len(br_list)) + '_seed_' + str(seed) + '_infostates.npy',
-                    np.array(cfr_psro_infostates))
+            save_prefix = './results/fixed_pop/XDO/num_pop_' + str(len(br_list)) + '_seed_' + str(seed)
+            ensure_dir(save_prefix)
+            print(f"saving to: {save_prefix + '_times.npy'}")
+            np.save(save_prefix + '_times.npy', np.array(cfr_psro_times))
+            print(f"saving to: {save_prefix + '_exps.npy'}")
+            np.save(save_prefix + '_exps.npy', np.array(cfr_psro_exps))
+            print(f"saving to: {save_prefix + '_episodes.npy'}")
+            np.save(save_prefix + '_episodes.npy', np.array(cfr_psro_episodes))
+            print(f"saving to: {save_prefix + '_infostates.npy'}")
+            np.save(save_prefix + '_infostates.npy', np.array(cfr_psro_infostates))
             if br_list_conv < br_conv_threshold:
                 print("Done")
                 break

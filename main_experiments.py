@@ -2,6 +2,7 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import os
 import argparse
 import datetime
 import time
@@ -18,6 +19,10 @@ from open_spiel.python.algorithms import fictitious_play_br_actions
 from open_spiel.python.algorithms import outcome_sampling_mccfr
 from open_spiel.python.algorithms import psro_oracle
 
+def ensure_dir(file_path):
+    directory = os.path.dirname(file_path)
+    if not os.path.exists(directory):
+        os.makedirs(directory, exist_ok=True)
 
 def _full_best_response_policy(br_infoset_dict):
     """Turns a dictionary of best response action selections into a full policy.
@@ -108,6 +113,7 @@ if __name__ == '__main__':
                 exps.append(conv)
                 episodes.append(i)
                 save_prefix = './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info
+                ensure_dir(save_prefix)
                 print(f"saving to: {save_prefix + '_times.npy'}")
                 np.save(save_prefix + '_times', np.array(times))
                 print(f"saving to: {save_prefix + '_exps.npy'}")
@@ -187,6 +193,7 @@ if __name__ == '__main__':
 
             br_list.append(brs)
             save_prefix = './results/' + algorithm + '_' + game_name + '_random_br_' + str(random_max_br) + extra_info
+            ensure_dir(save_prefix)
             print(f"saving to: {save_prefix + '_times.npy'}")
             np.save(save_prefix + '_times', np.array(xdo_times))
             print(f"saving to: {save_prefix + '_exps.npy'}")
