@@ -29,7 +29,6 @@ def create_random_tabular_policy(game, players=(0, 1)):
 
 
 def policy_class_instance_to_full_policy(policy_class_instance):
-    # why does openspiel have two definitions of a policyyyy
     def wrap(state):
         action_probs = policy_class_instance.action_probabilities(state=state, player_id=state.current_player())
         ap_list = []
