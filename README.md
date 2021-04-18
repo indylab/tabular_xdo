@@ -92,17 +92,17 @@ python xdo_psro_fixed_population_comparison.py --num_strats 1000
 To replicate figure 3.b, run the following commands:
 
 ```shell script
-python main_experiments.py --algorithm XDO --game_name leduc_poker
-python main_experiments.py --algorithm PSRO --game_name leduc_poker
+python main_experiments.py --algorithm xdo --game_name leduc_poker
+python main_experiments.py --algorithm psro --game_name leduc_poker
 ```
 
 To replicate figure 3.c and figure 4.a, run the following commands:
 
 ```shell script
-python main_experiments.py --algorithm XDO --game_name leduc_poker_dummy
-python main_experiments.py --algorithm PSRO --game_name leduc_poker_dummy
-python main_experiments.py --algorithm CFR --game_name leduc_poker_dummy
-python main_experiments.py --algorithm XFP --game_name leduc_poker_dummy
+python main_experiments.py --algorithm xdo --game_name leduc_poker_dummy
+python main_experiments.py --algorithm psro --game_name leduc_poker_dummy
+python main_experiments.py --algorithm cfr --game_name leduc_poker_dummy
+python main_experiments.py --algorithm xfp --game_name leduc_poker_dummy
 ```
 
 
