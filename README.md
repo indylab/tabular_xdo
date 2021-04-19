@@ -80,7 +80,7 @@ export PYTHONPATH=$PYTHONPATH:/<path_to_open_spiel_submodule>/build/python
 To replicate figure 3.a, run the following commands:
 
 ```shell script
-python xdo_psro_fixed_population_comparison.py --num_strats 2
+python xdo_psro_fixed_population_comparison.py --num_strats 1
 python xdo_psro_fixed_population_comparison.py --num_strats 10
 python xdo_psro_fixed_population_comparison.py --num_strats 20
 python xdo_psro_fixed_population_comparison.py --num_strats 50
