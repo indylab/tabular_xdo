@@ -25,7 +25,7 @@ def create_random_tabular_policy(game, players=(0, 1)):
         chosen_legal_action = np.random.choice(legal_actions_list)
         return {action: (1.0 if action == chosen_legal_action else 0.0) for action in legal_actions_list}
 
-    return tabular_policy_from_callable(game=game, players=players, callable_policy=_random_action_callable_policy)
+    return tabular_policy_from_callable(game=game, callable_policy=_random_action_callable_policy)
 
 
 def policy_class_instance_to_full_policy(policy_class_instance):
@@ -96,10 +96,10 @@ def get_xdo_restricted_game_meta_Nash(game, br_list, br_conv_threshold=1e-2, see
 
 def get_psro_meta_Nash(game, br_list, num_episodes=100, seed=1):
     psro_br_list = []
-    psro_br_list.append(br_list[0])
-    psro_br_list.append([1 / len(br_list[0]) for _ in range(len(br_list[0]))])
-    psro_br_list.append(br_list[1])
-    psro_br_list.append([1 / len(br_list[1]) for _ in range(len(br_list[1]))])
+    psro_br_list.append([br[0] for br in br_list])
+    psro_br_list.append([1 / len(br_list) for _ in range(len(br_list))])
+    psro_br_list.append([br[1] for br in br_list])
+    psro_br_list.append([1 / len(br_list) for _ in range(len(br_list))])
 
     solver = psro_oracle.PSRO(game, psro_br_list, num_episodes=num_episodes)
     solver.evaluate()
